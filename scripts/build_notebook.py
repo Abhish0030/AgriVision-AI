@@ -62,7 +62,7 @@ COMMIT = validate_checkout(CHECKOUT, REPOSITORY_URL)
 print('Verified source commit:', COMMIT)
 """)
 section("3. Install supporting dependencies",
-        "Expected: successful installation and pip check. The installer pins the already working TensorFlow, Keras, NumPy, protobuf, ml-dtypes and h5py versions. If requirements conflict, it stops instead of replacing the stack. Resolve errors in a compatible clean runtime before training.", """
+        "Expected: verified project imports/dependencies, actual installed versions and preserved TensorFlow, Keras, NumPy, protobuf, ml-dtypes and h5py. Global pip check conflicts from unrelated preinstalled Colab packages are warnings, not fatal errors. Do not blindly upgrade Gradio Client or Starlette to fix unrelated conflicts. Actual missing/incompatible project dependencies still stop setup. No GPU settings are changed.", """
 from src.bootstrap import install_colab_dependencies
 stack_versions = install_colab_dependencies(CHECKOUT, Path('/content/agrivision-tf-constraints.txt'))
 print('Preserved TensorFlow stack:', stack_versions)

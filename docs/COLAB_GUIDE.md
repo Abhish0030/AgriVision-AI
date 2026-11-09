@@ -44,7 +44,10 @@ the session if a previous checkout's modules are still imported.
 Use the notebook installer around `requirements-colab.txt`. It excludes
 TensorFlow and additionally constrains installed TensorFlow/Keras/NumPy/protobuf/
 ml-dtypes/h5py versions. Conflicts stop installation rather than changing that
-working stack; pip check must pass. If installation fails, use a compatible clean
+working stack. Required project imports and active dependency versions must pass
+`verify_project_dependencies()`. Global `pip check` conflicts outside that project
+dependency graph are printed as nonfatal warnings. Do not upgrade Gradio Client
+or Starlette to repair unrelated Colab packages. If project verification fails, use a compatible clean
 runtime and inspect the dependency conflict instead of blindly upgrading packages.
 If TensorFlow import/CUDA loading fails, start a fresh GPU runtime before replacing
 the stack. Dependency ranges are compatibility bounds, not a claim every combination

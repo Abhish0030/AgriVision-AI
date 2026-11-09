@@ -21,6 +21,46 @@ provide a simple demonstration whose metrics come from actual saved experiments.
 The application supports inspection and learning; it does not establish a field
 diagnosis from a photograph alone.
 
+## Colab dependency installation
+
+Use the main notebook's installation cell, which calls:
+
+```python
+from pathlib import Path
+from src.bootstrap import install_colab_dependencies
+
+stack_versions = install_colab_dependencies(
+    CHECKOUT, Path('/content/agrivision-tf-constraints.txt')
+)
+```
+
+The installer pins the runtime's existing TensorFlow, Keras, NumPy, protobuf,
+ml-dtypes and h5py before installing `requirements-colab.txt` with pip's
+`only-if-needed` strategy. TensorFlow 2.21.0 and Keras 3.13.2 are retained when
+already installed; NumPy is not upgraded to resolve unrelated Colab conflicts.
+No CUDA packages or GPU settings are explicitly changed. An incompatible protected
+version causes an actionable project dependency error rather than a stack upgrade.
+
+Required package imports, supported version ranges and their active transitive
+dependencies are verified separately. Actual installed project/stack versions and
+GPU device listings are printed. Global `pip check` output is captured and shown
+as a **nonfatal warning** when project verification passes. Conflicts from unrelated
+Colab packages (such as IPython/jedi, hf-gradio, google-genai, python-fasthtml or
+google-adk) do not block training setup. Do not blindly upgrade Gradio Client or
+Starlette, uninstall Colab packages, or replace the working TensorFlow environment
+to clear those warnings.
+
+To recheck the project without installing anything:
+
+```python
+from src.bootstrap import verify_project_dependencies
+project_versions = verify_project_dependencies(CHECKOUT)
+```
+
+An actual missing/incompatible project dependency or failed required import still
+raises an error. This local validation does not verify GPU training or execution
+inside your Colab runtime.
+
 ## Technology stack
 
 | Area | Tools |
