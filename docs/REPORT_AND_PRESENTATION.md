@@ -2,6 +2,11 @@
 
 These are outlines, not completed experiments. Fill results only after executing
 the real dataset/training/evaluation workflow. No screenshot or metric is invented.
+For the optimization study, use `validation_experiments.csv`, the frozen selection,
+`final_comparison.csv`, per-class reports, actual Grad-CAM examples and external
+support/overlap reports. See [TRAINING_GUIDE.md](TRAINING_GUIDE.md). Keep controlled
+PlantVillage results, external point estimates and the unverified 90% research
+target separate in the report and slides.
 
 ## Report outline
 

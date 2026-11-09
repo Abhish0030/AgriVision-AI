@@ -2,6 +2,12 @@
 
 ## Primary research and framework documentation
 
+- Singh et al., *PlantDoc: A Dataset for Visual Plant Disease Detection*:
+  https://arxiv.org/abs/1911.10317 and the classification dataset
+  https://github.com/pratikkayal/PlantDoc-Dataset
+- Keras AdamW: https://keras.io/api/optimizers/adamw/
+- Keras loss/label-smoothing APIs: https://keras.io/api/losses/probabilistic_losses/
+
 - Hughes and Salathé, *An open access repository of images on plant health to
   enable the development of mobile disease diagnostics*:
   https://arxiv.org/abs/1511.08060

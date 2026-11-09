@@ -1,5 +1,9 @@
 # Development validation
 
+For the current optimization pipeline, see
+[OPTIMIZATION_VALIDATION.md](OPTIMIZATION_VALIDATION.md). The earlier audit
+baseline below is retained as historical development evidence.
+
 Validated locally on **10 November 2026** using Windows CPU execution in an isolated
 `.venv`: Python 3.13.7, TensorFlow 2.21.0, Keras 3.15.1, NumPy 2.2.6 and Gradio
 5.50.0. This is one tested environment, not a guarantee for every version allowed

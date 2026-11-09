@@ -198,3 +198,41 @@ records in disease_info.json. The model does not generate treatment advice.
 
 **What is your accuracy?** “I can report it only after real evaluation. The
 application reads the actual saved metrics, or says evaluation is unavailable.”
+
+## Optimization and external-evaluation questions
+
+**How do you choose an optimized model without test leakage?** Freeze one data
+manifest, train a declared set of trials, compare validation macro F1, then freeze
+one winner per architecture before any held-out inference. Test results measure
+the selected pipelines; they do not choose hyperparameters.
+
+**What does label smoothing change?** For C classes and smoothing epsilon,
+the target is y'=(1-epsilon)y+epsilon/C. It softens the one-hot target inside
+cross-entropy, which can discourage extreme confidence. We keep integer input
+labels and implement smoothing inside a registered loss. It is optional and has
+not been shown to improve this project until real validation experiments run.
+
+**What is AdamW?** AdamW adds decoupled weight decay to Adam-style adaptive
+updates. The trial changes the optimizer relative to the same mild baseline,
+rather than assuming it improves every dataset. Compare measured validation
+performance and disclose the configured decay.
+
+**Why is balanced accuracy included?** In multiclass classification it is the
+mean recall across truth classes. It makes rare classes count equally and may
+equal the reported macro recall when the same class scope is used.
+
+**Why is PlantVillage accuracy not field accuracy?** Backgrounds, lighting,
+label ambiguity, camera quality and disease severity can shift the distribution.
+An independent compatible-class test measures another distribution; its size,
+provenance and scope must accompany its accuracy. PlantDoc internet images are
+not automatically representative of all agricultural environments.
+
+**Can rejecting predictions prove 90% accuracy?** No. Accuracy among accepted
+images is conditional and depends on coverage. All retained external images still
+count in unconditional accuracy. A validation threshold and Wilson screening do
+not guarantee future precision after model/threshold selection or domain shift.
+
+**What are ECE and Brier score?** ECE summarizes confidence-versus-correctness
+differences in bins; Brier score averages squared probability errors across
+classes. Both diagnose confidence on the evaluated sample. Neither establishes
+calibration across all future inputs, and no temperature scaling is claimed here.

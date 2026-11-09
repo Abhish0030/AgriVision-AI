@@ -35,7 +35,9 @@ Adam learning rate. BatchNorm remains frozen and the backbone is called with
 training=False. Recompilation follows trainability changes. Sparse cross-entropy
 uses integer labels. Inverse-frequency weights use training counts only.
 
-Early stopping and ReduceLROnPlateau monitor validation loss. A custom persistent
+Direct baseline training monitors validation loss by default. The optimization
+notebook monitors validation macro F1 for checkpointing, early stopping and LR
+reduction. A custom persistent
 callback performs the ModelCheckpoint role and also commits optimizer, epoch,
 stage and history. Best validation checkpoint is independent of the resume
 checkpoint. Test results never select checkpoints. Config/manifest changes require

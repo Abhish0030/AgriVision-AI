@@ -26,16 +26,17 @@ def restore_best_alias(folder, state):
 
 class PersistentEpoch(tf.keras.callbacks.Callback):
     """Commit checkpoint before state; preserve optimizer and completed epoch."""
-    def __init__(self, folder, state, stage):
+    def __init__(self, folder, state, stage, monitor="val_loss"):
         super().__init__()
         self.folder, self.state, self.stage = folder, state, stage
+        self.monitor = monitor
 
     def on_epoch_begin(self, epoch, logs=None):
         self.started = time.perf_counter()
 
     def on_epoch_end(self, epoch, logs=None):
         logs = {k: float(v) for k, v in (logs or {}).items()}
-        if not {"loss", "val_loss"}.issubset(logs) or not all(np.isfinite(value) for value in logs.values()):
+        if not {"loss", "val_loss", self.monitor}.issubset(logs) or not all(np.isfinite(value) for value in logs.values()):
             raise RuntimeError("Nonfinite or missing epoch metrics; preserving the last committed checkpoints.")
         seconds = time.perf_counter() - self.started
         previous = self.state.get("latest_checkpoint")
@@ -43,8 +44,12 @@ class PersistentEpoch(tf.keras.callbacks.Callback):
         filename = f"resume_{self.stage}_{epoch + 1:04d}_{uuid4().hex[:8]}.keras"
         atomic_save_model(self.model, self.folder / filename)
         next_state = copy.deepcopy(self.state)
-        if logs["val_loss"] < next_state.get("best_val_loss", float("inf")):
-            next_state.update(best_val_loss=logs["val_loss"], best_checkpoint=filename)
+        maximize = self.monitor == "val_macro_f1"
+        previous_score = next_state.get("best_monitor_value", next_state.get("best_val_loss", -float("inf") if maximize else float("inf")))
+        improved = logs[self.monitor] > previous_score if maximize else logs[self.monitor] < previous_score
+        if improved:
+            next_state.update(best_val_loss=logs["val_loss"], best_checkpoint=filename,
+                              best_monitor_value=logs[self.monitor], checkpoint_monitor=self.monitor)
         next_state.update(stage=self.stage, next_epoch=epoch + 1, latest_checkpoint=filename,
                           training_seconds=self.state.get("training_seconds", 0) + seconds)
         next_state.setdefault("history", []).append({"stage": self.stage, "epoch": epoch + 1, **logs})
@@ -59,6 +64,8 @@ class PersistentEpoch(tf.keras.callbacks.Callback):
 
 
 def train_architecture(architecture, paths, config, resume=True):
+    if (paths.output / "evaluation" / "selection.json").exists():
+        raise ValueError("Selection is frozen here. Train new trials in a new experiment, never against test feedback.")
     if architecture not in SUPPORTED_ARCHITECTURES or architecture not in config.architectures:
         raise ValueError("Select an architecture enabled in the experiment configuration.")
     frame, mapping, report = load_manifest(paths, verify_files=True, config=config)
@@ -90,7 +97,7 @@ def train_architecture(architecture, paths, config, resume=True):
         state = {"signature": signature, "stage": "head", "next_epoch": 0, "history": [], "training_seconds": 0}
         tf.keras.utils.set_random_seed(config.seed)
         model = build_model(architecture, len(mapping), config)
-        compile_model(model, config.head_learning_rate)
+        compile_model(model, config.head_learning_rate, config)
         write_json(folder / "class_indices.json", mapping)
         config.save(folder / "config.json")
         write_json(folder / "preprocessing.json", preprocessing_description(model))
@@ -108,12 +115,13 @@ def train_architecture(architecture, paths, config, resume=True):
         if stage != state["stage"]:
             model = tf.keras.models.load_model(folder / "best.keras", compile=False)
             enable_fine_tuning(model, config.fine_tune_layers)
-            compile_model(model, config.fine_tune_learning_rate)
+            compile_model(model, config.fine_tune_learning_rate, config)
             state.update(stage=stage, next_epoch=0)
-        checkpoint = PersistentEpoch(folder, state, stage)
+        checkpoint = PersistentEpoch(folder, state, stage, config.checkpoint_monitor)
+        mode = "max" if config.checkpoint_monitor == "val_macro_f1" else "min"
         callbacks = [tf.keras.callbacks.TerminateOnNaN(),
-                     tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=config.patience),
-                     tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=.5, patience=2, min_lr=1e-7),
+                     tf.keras.callbacks.EarlyStopping(monitor=config.checkpoint_monitor, mode=mode, patience=config.patience),
+                     tf.keras.callbacks.ReduceLROnPlateau(monitor=config.checkpoint_monitor, mode=mode, factor=.5, patience=2, min_lr=1e-7),
                      checkpoint]
         model.fit(train_ds, validation_data=val_ds, initial_epoch=state["next_epoch"], epochs=epochs,
                   class_weight=weights, callbacks=callbacks, verbose=2, shuffle=False)

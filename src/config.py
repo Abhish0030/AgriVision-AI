@@ -24,6 +24,13 @@ class ProjectConfig:
     patience: int = 4
     near_duplicate_distance: int = 4
     class_weighting: bool = True
+    augmentation_profile: str = "mild"
+    optimizer: str = "Adam"
+    weight_decay: float = 1e-4
+    label_smoothing: float = 0.0
+    checkpoint_monitor: str = "val_loss"
+    rejection_target_precision: float = 0.90
+    rejection_min_samples: int = 30
     train_fraction: float = 0.70
     validation_fraction: float = 0.15
     test_fraction: float = 0.15
@@ -35,14 +42,14 @@ class ProjectConfig:
     dataset_name: str = "PlantVillage"
 
     def __post_init__(self):
-        integer_fields = ("seed", "batch_size", "head_epochs", "fine_tune_epochs", "fine_tune_layers", "patience", "near_duplicate_distance")
+        integer_fields = ("seed", "batch_size", "head_epochs", "fine_tune_epochs", "fine_tune_layers", "patience", "near_duplicate_distance", "rejection_min_samples")
         for key in integer_fields:
             value = getattr(self, key)
             if type(value) is not int or value < (0 if key in {"seed", "near_duplicate_distance"} else 1):
                 raise ValueError(f"{key} must be an integer in its valid nonnegative/positive range.")
         if not 0 <= self.seed < 2**31:
             raise ValueError("seed must be in [0, 2**31).")
-        for key in ("head_learning_rate", "fine_tune_learning_rate", "dropout", "train_fraction", "validation_fraction", "test_fraction", "confidence_threshold"):
+        for key in ("head_learning_rate", "fine_tune_learning_rate", "dropout", "train_fraction", "validation_fraction", "test_fraction", "confidence_threshold", "weight_decay", "label_smoothing", "rejection_target_precision"):
             value = getattr(self, key)
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
                 raise ValueError(f"{key} must be a finite number.")
@@ -50,6 +57,12 @@ class ProjectConfig:
             raise ValueError("Learning rates must be positive; fine-tuning must use a lower rate.")
         if not 0 <= self.dropout < 1:
             raise ValueError("dropout must be in [0,1).")
+        if self.augmentation_profile not in {"none", "mild", "robust"} or self.optimizer not in {"Adam", "AdamW"}:
+            raise ValueError("Choose a supported augmentation profile and Adam/AdamW optimizer.")
+        if self.weight_decay < 0 or not 0 <= self.label_smoothing < 1 or not 0 < self.rejection_target_precision < 1:
+            raise ValueError("Invalid weight decay, label smoothing or rejection precision target.")
+        if self.checkpoint_monitor not in {"val_loss", "val_macro_f1"}:
+            raise ValueError("Checkpoint monitor must be val_loss or val_macro_f1.")
         if not isinstance(self.image_size, (tuple, list)) or len(self.image_size) != 2 or any(type(size) is not int or size < 32 for size in self.image_size):
             raise ValueError("image_size must contain two integers >=32 for both application backbones.")
         for key, choices in (("crops", SUPPORTED_CROPS), ("architectures", SUPPORTED_ARCHITECTURES)):

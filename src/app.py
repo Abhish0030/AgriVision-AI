@@ -2,6 +2,7 @@
 import gradio as gr
 from .disease_information import information_markdown
 from .prediction import PlantDiseasePredictor
+from .utils import read_json
 
 
 LIMITATIONS = ("Research demonstration for supported crop classes. PlantVillage has controlled backgrounds; "
@@ -12,6 +13,12 @@ LIMITATIONS = ("Research demonstration for supported crop classes. PlantVillage 
 
 def create_app(paths, config):
     cache = {}
+    selection_path = paths.output / "evaluation" / "selection.json"
+    selected_default = read_json(selection_path)["overall_best_architecture"] if selection_path.exists() else config.architectures[0]
+    if not selection_path.exists():
+        available = [name for name in config.architectures if (paths.output / "models" / name / "best.keras").exists()]
+        if available:
+            selected_default = available[0]
 
     def load(name):
         if name not in cache:
@@ -25,12 +32,13 @@ def create_app(paths, config):
             raise gr.Error("Upload a JPG, JPEG or PNG leaf image first.")
         try:
             predictor = load(architecture)
-            result = predictor.predict_plant_disease(image, threshold)
+            result = predictor.predict_plant_disease(image, None if threshold == 0 else threshold)
         except (OSError, ValueError, RuntimeError) as exc:
             raise gr.Error(str(exc)) from exc
         cam = result["gradcam"]
         summary = (f"**Crop:** {result['crop']}  \n**Disease/class:** {result['disease']}  \n"
-                   f"**Confidence:** {result['confidence_percent']:.2f}%  \n**Health status:** {result['health_status']}")
+                   f"**Confidence:** {result['confidence_percent']:.2f}%  \n**Health status:** {result['health_status']}  \n"
+                   f"**Model version:** `{result['model_version']}`  \n**Warning threshold:** {result['rejection_threshold']:.3f} ({result['threshold_source']})")
         warning = result["uncertainty_warning"] or "No low-confidence warning triggered. Confidence is not a reliability guarantee."
         explanation = f"Grad-CAM layer: `{cam['layer']}`. Warm colors indicate positive contribution to the selected class score."
         if cam["zero_map"]:
@@ -48,8 +56,8 @@ def create_app(paths, config):
         with gr.Row():
             image = gr.Image(type="filepath", label="Upload a leaf image", sources=["upload"], format="png")
             with gr.Column():
-                architecture = gr.Dropdown(list(config.architectures), value=config.architectures[0], label="Model")
-                threshold = gr.Slider(.05, 1, value=config.confidence_threshold, step=.01, label="Confidence warning threshold")
+                architecture = gr.Dropdown(list(config.architectures), value=selected_default, label="Model (validation-selected default when available)")
+                threshold = gr.Slider(0, 1, value=0, step=.01, label="Warning threshold override — 0 uses saved validation threshold / fallback")
                 analyze_button = gr.Button("Analyze", variant="primary")
                 clear = gr.Button("Upload another image / Clear")
         summary = gr.Markdown("Upload an image and select Analyze. Training must be completed first.")

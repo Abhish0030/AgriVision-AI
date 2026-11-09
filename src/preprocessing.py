@@ -50,6 +50,6 @@ def make_dataset(frame, dataset_root, config, training=False):
     ds = ds.map(decode, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
     ds = ds.batch(config.batch_size)
     if training:
-        augmentation = build_augmentation(config.seed)
+        augmentation = build_augmentation(config.seed, config.augmentation_profile)
         ds = ds.map(lambda x, y: (augmentation(x, training=True), y), num_parallel_calls=tf.data.AUTOTUNE)
     return ds.prefetch(tf.data.AUTOTUNE)

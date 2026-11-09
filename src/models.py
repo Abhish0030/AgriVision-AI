@@ -5,6 +5,45 @@ ARCHITECTURES = {"EfficientNetB0": tf.keras.applications.EfficientNetB0,
                  "MobileNetV3Large": tf.keras.applications.MobileNetV3Large}
 
 
+@tf.keras.utils.register_keras_serializable(package="AgriVision")
+class MacroF1(tf.keras.metrics.Metric):
+    def __init__(self, num_classes, name="macro_f1", **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.num_classes = int(num_classes)
+        self.matrix = self.add_weight(name="confusion", shape=(self.num_classes, self.num_classes), initializer="zeros", dtype="float32")
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        labels = tf.cast(tf.reshape(y_true, [-1]), tf.int32)
+        predicted = tf.argmax(y_pred, axis=-1, output_type=tf.int32)
+        weights = None if sample_weight is None else tf.cast(tf.reshape(sample_weight, [-1]), tf.float32)
+        self.matrix.assign_add(tf.math.confusion_matrix(labels, predicted, self.num_classes, weights=weights, dtype=tf.float32))
+
+    def result(self):
+        true_positive = tf.linalg.diag_part(self.matrix)
+        return tf.reduce_mean(tf.math.divide_no_nan(2 * true_positive, tf.reduce_sum(self.matrix, 0) + tf.reduce_sum(self.matrix, 1)))
+
+    def reset_state(self):
+        self.matrix.assign(tf.zeros_like(self.matrix))
+
+    def get_config(self):
+        return {**super().get_config(), "num_classes": self.num_classes}
+
+
+@tf.keras.utils.register_keras_serializable(package="AgriVision")
+class SparseSmoothedCrossentropy(tf.keras.losses.Loss):
+    """Integer labels stay integer; optional smoothing is applied inside the loss."""
+    def __init__(self, label_smoothing=0.0, **kwargs):
+        super().__init__(**kwargs)
+        self.label_smoothing = float(label_smoothing)
+
+    def call(self, y_true, y_pred):
+        target = tf.one_hot(tf.cast(tf.reshape(y_true, [-1]), tf.int32), tf.shape(y_pred)[-1], dtype=tf.float32)
+        return tf.keras.losses.categorical_crossentropy(target, tf.cast(y_pred, tf.float32), label_smoothing=self.label_smoothing)
+
+    def get_config(self):
+        return {**super().get_config(), "label_smoothing": self.label_smoothing}
+
+
 def build_model(architecture, num_classes, config, weights="imagenet"):
     if architecture not in ARCHITECTURES or num_classes < 2:
         raise ValueError("Choose a supported architecture and at least two classes.")
@@ -32,10 +71,14 @@ def get_backbone(model):
     return nested[0]
 
 
-def compile_model(model, learning_rate):
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate),
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                  metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy")])
+def compile_model(model, learning_rate, config=None):
+    adamw = config is not None and config.optimizer == "AdamW"
+    optimizer = (tf.keras.optimizers.AdamW(learning_rate, weight_decay=config.weight_decay)
+                 if adamw else tf.keras.optimizers.Adam(learning_rate))
+    smoothing = config.label_smoothing if config else 0.0
+    loss = SparseSmoothedCrossentropy(smoothing, dtype="float32") if smoothing else tf.keras.losses.SparseCategoricalCrossentropy()
+    model.compile(optimizer=optimizer, loss=loss,
+                  metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy"), MacroF1(model.output_shape[-1])])
 
 
 def enable_fine_tuning(model, layers):

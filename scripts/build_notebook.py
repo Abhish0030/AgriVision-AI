@@ -73,15 +73,15 @@ from google.colab import drive
 from src.config import ProjectConfig, ProjectPaths
 from src.environment import configure_runtime
 from src.bootstrap import record_experiment
-from src.utils import write_json
+from src.utils import read_json, write_json
 from IPython.display import Image as DisplayImage, display
 drive.mount('/content/drive')
 
 DRIVE_ROOT = Path('/content/drive/MyDrive/AgriVision-AI')
 DATASET_ZIP = DRIVE_ROOT / 'datasets' / 'PlantVillage.zip'
 DATASET_DIR = Path('/content/plantvillage_original_color')
-EXPERIMENT_DIR = DRIVE_ROOT / 'experiments' / 'baseline_01'
-config = ProjectConfig()  # Edit epochs or batch_size BEFORE first training.
+EXPERIMENT_DIR = DRIVE_ROOT / 'experiments' / 'optimization_01'
+config = ProjectConfig(checkpoint_monitor='val_macro_f1')  # Edit epochs/batch size BEFORE saving the trial plan.
 paths = ProjectPaths.create(dataset=DATASET_DIR, output=EXPERIMENT_DIR).initialize()
 record_experiment(paths, config, REPOSITORY_URL, COMMIT)
 environment = configure_runtime(config, paths.output / 'runs')
@@ -118,37 +118,50 @@ from src.preprocessing import resize_rgb
 from src.augmentation import plot_augmentation
 sample = resize_rgb(paths.dataset / frame.iloc[0].path, config.image_size)
 print(sample.shape, sample.dtype, sample.min(), sample.max())
-plot_augmentation(sample, paths.output / 'graphs' / 'augmentation.png', config.seed)
-display(DisplayImage(filename=str(paths.output / 'graphs' / 'augmentation.png')))
+for profile in ('none', 'mild', 'robust'):
+    plot_augmentation(sample, paths.output / 'graphs' / f'augmentation_{profile}.png', config.seed, profile)
+    display(DisplayImage(filename=str(paths.output / 'graphs' / f'augmentation_{profile}.png')))
 """)
-section("8. Train EfficientNetB0",
-        "Expected: real epoch logs, best.keras, resumable checkpoint with optimizer state, histories and graphs. First run downloads ImageNet weights. After disconnection rerun setup/extraction and this cell with unchanged config/output paths. Completed epochs resume; patience counters and augmentation ordering restart, so continuation is not bit-for-bit identical.", """
-from src.training import train_architecture
-print(train_architecture('EfficientNetB0', paths, config, resume=True))
-display(DisplayImage(filename=str(paths.output / 'graphs' / 'EfficientNetB0_training.png')))
+section("8. Train controlled trials using validation only",
+        "Expected: six trials by default — each model with none/mild/robust augmentation. Optional optimizer/tail/smoothing trials change one factor relative to mild. They are candidates, not proven improvements. Set flags BEFORE first execution. ImageNet downloads once; full runs may exceed one free Colab session. Use RUN_TRIAL_IDS to run a subset from the saved plan, then resume remaining trials. No test inference occurs here. GPU training is required; local synthetic tests are separate.", """
+from src.experiments import build_trial_plan, run_trials
+if not tf.config.list_physical_devices('GPU'):
+    raise RuntimeError('Select a Colab GPU runtime before real training. Do not report CPU software tests as this experiment.')
+INCLUDE_ADAMW_TRIALS = False
+INCLUDE_DEEPER_TAIL_TRIALS = False
+INCLUDE_LABEL_SMOOTHING_TRIALS = False
+trials = build_trial_plan(config, include_optimizer=INCLUDE_ADAMW_TRIALS,
+                          include_fine_tuning=INCLUDE_DEEPER_TAIL_TRIALS,
+                          include_smoothing=INCLUDE_LABEL_SMOOTHING_TRIALS)
+display([{'trial_id': t['trial_id'], 'architecture': t['architecture'], 'config': t['config']} for t in trials])
+RUN_TRIAL_IDS = None  # Or a list of IDs printed above; selection later requires the entire saved plan.
+display(run_trials(paths, config, trials, only_trial_ids=RUN_TRIAL_IDS))
 """)
-section("9. Train MobileNetV3Large on the same manifest",
-        "Expected: the same artifact types for MobileNetV3Large. Both use the same data, seed and schedule. Tail-layer count is a practical baseline, not an equal compute-budget comparison. If GPU memory is exhausted, use batch_size=16 in a NEW experiment, then run both models with that config.", """
-tf.keras.backend.clear_session()
-tf.keras.utils.set_random_seed(config.seed)
-print(train_architecture('MobileNetV3Large', paths, config, resume=True))
-display(DisplayImage(filename=str(paths.output / 'graphs' / 'MobileNetV3Large_training.png')))
+section("9. Freeze winners using validation macro F1",
+        "Expected: selection.json, version registry, one exported winner per architecture, and efficientnet_best.keras / mobilenet_best.keras aliases. No test scores influence selection. All planned trials must finish. After freezing, this experiment cannot add trials based on held-out results. If GPU memory failed, change batch size only in a NEW experiment for every trial.", """
+from src.experiments import select_best_trials, export_selected_models
+selection = select_best_trials(paths)
+display(selection)
+display(export_selected_models(paths))
+for architecture in selection['winners']:
+    display(DisplayImage(filename=str(paths.output / 'graphs' / f'{architecture}_training.png')))
 """)
-section("10. Evaluate and compare",
-        "Expected: actual test metrics, per-class reports, confusion matrices and comparison CSV. Checkpoints use validation loss; do not tune against the test set. Latency uses five warmups and 30 synchronized batch-one calls, excluding I/O and Grad-CAM. Interpret difficult classes using actual confusion matrices.", """
-from src.evaluation import evaluate_architecture, compare_models
-for architecture in config.architectures:
-    tf.keras.backend.clear_session()
-    result = evaluate_architecture(architecture, paths, config)
-    display({k: result[k] for k in ('model', 'accuracy', 'precision_macro', 'recall_macro', 'macro_f1', 'weighted_f1', 'inference_ms_median')})
+section("10. Evaluate the frozen winners on internal test data",
+        "Expected: actual accuracy, macro/weighted F1, balanced accuracy, per-class reports, matrices, confidence diagnostics, comparison charts and timing. Saved matching results are reused on reconnection rather than retuning. If winning trial configs differ, the table discloses that; this is a comparison of selected pipelines rather than an equal-settings architecture-only claim. Latency excludes image I/O and Grad-CAM.", """
+from src.experiments import evaluate_selected_models
+display(evaluate_selected_models(paths))
+for architecture in selection['winners']:
+    display(read_json(paths.output / 'evaluation' / f'{architecture}.json'))
     display(DisplayImage(filename=str(paths.output / 'confusion_matrices' / f'{architecture}.png')))
-display(compare_models(paths, config.architectures))
+    display(DisplayImage(filename=str(paths.output / 'evaluation' / f'{architecture}_per_class.png')))
+display(DisplayImage(filename=str(paths.output / 'evaluation' / 'model_comparison.png')))
 """)
 section("11. Independently verify Grad-CAM for both models",
         "Expected: original, heatmap and overlay plus the independently discovered layer name. Grad-CAM computes ReLU(sum_k alpha_k A_k), with alpha_k equal to mean spatial gradient of the selected logit. A zero positive map is reported, not hidden. This is sensitivity evidence, not proof of correct diagnosis.", """
-from src.gradcam import gradcam
+from src.gradcam import gradcam, save_error_examples
 from PIL import Image
 import numpy as np
+import pandas as pd
 test_image = paths.dataset / frame[frame.split == 'test'].iloc[0].path
 for architecture in config.architectures:
     tf.keras.backend.clear_session()
@@ -159,6 +172,8 @@ for architecture in config.architectures:
     for key in ('original', 'heatmap', 'overlay'):
         Image.fromarray(cam[key]).save(paths.output / 'predictions' / f'{architecture}_{key}.png')
         display(Image.fromarray(cam[key]))
+    saved_predictions = pd.read_csv(paths.output / 'predictions' / f'{architecture}_test.csv')
+    display(save_error_examples(model, saved_predictions, paths.dataset, paths.output / 'predictions' / architecture))
     del model
 """)
 section("12. Prediction and static disease information",
@@ -166,7 +181,7 @@ section("12. Prediction and static disease information",
 from src.prediction import PlantDiseasePredictor
 from src.disease_information import information_markdown
 PREDICTION_IMAGE = test_image
-predictor = PlantDiseasePredictor(paths, 'EfficientNetB0')
+predictor = PlantDiseasePredictor(paths, selection['overall_best_architecture'])
 prediction = predictor.predict_plant_disease(PREDICTION_IMAGE)
 display({k: v for k, v in prediction.items() if k not in ('gradcam', 'information')})
 print(information_markdown(prediction['information']))
@@ -174,7 +189,48 @@ display(Image.fromarray(prediction['gradcam']['overlay']))
 del predictor
 tf.keras.backend.clear_session()
 """)
-section("13. Gradio demonstration",
+section("13. Optional external dataset: upload and explicitly review labels",
+        "Skip only if no external data is available; external accuracy remains unverified. Upload a separate PlantDoc classification ZIP to Drive. Use its test directory initially; none of its images may enter our training. PlantDoc contains internet-scraped imagery, not guaranteed representative field sampling. Inspect actual folders/labels and the conservative mapping: ambiguous rust/blight/virus/healthy labels are null by default. Set the review flag yourself only after inspection. Do not guess missing classes or conflate generic labels with specific pathogens.", """
+from src.utils import read_json
+RUN_EXTERNAL_EVALUATION = False
+EXTERNAL_ZIP = DRIVE_ROOT / 'datasets' / 'PlantDoc.zip'
+EXTERNAL_EXTRACT = Path('/content/plantdoc_external')
+EXTERNAL_ROOT = EXTERNAL_EXTRACT / 'PlantDoc-Dataset-master' / 'test'  # Adjust to your ZIP's actual tree.
+if RUN_EXTERNAL_EVALUATION:
+    if not EXTERNAL_EXTRACT.exists():
+        extract_dataset_zip(EXTERNAL_ZIP, EXTERNAL_EXTRACT)
+    print('External root:', EXTERNAL_ROOT)
+    print('Folders:', sorted(p.name for p in EXTERNAL_ROOT.iterdir() if p.is_dir()))
+    external_spec = read_json(CHECKOUT / 'configs' / 'plantdoc_mapping.json')
+    display(external_spec)
+else:
+    print('External evaluation not run. The 90% independent real-world target is NOT verified.')
+""")
+section("14. Screen external overlap and evaluate without training on it",
+        "Review mapping and provenance before changing EXTERNAL_MAPPING_REVIEWED. Review the generated external/audit.csv for false near matches and excluded classes. Models predict over ALL trained classes; external macro metrics use compatible truth classes. Matched internal-class results separate class-composition effects from domain shift. Wilson intervals/sample support and unconditional accuracy are reported. Rejection accuracy is conditional, not the 90% all-image target. A small or uncertain-provenance external set cannot verify broad real-world performance.", """
+from src.external import prepare_external_dataset, load_external_manifest, evaluate_external
+from src.error_analysis import analyze_external_errors
+from src.experiments import generate_final_comparison
+EXTERNAL_MAPPING_REVIEWED = False  # Required manual review, not a default approval.
+INDEPENDENCE_CONFIRMED_BY_USER = False
+EXTERNAL_AUDIT_REVIEWED = False  # Run once to generate reports; inspect them, then set True and rerun.
+if RUN_EXTERNAL_EVALUATION:
+    external_spec['reviewed'] = EXTERNAL_MAPPING_REVIEWED
+    external_spec['independence_confirmed_by_user'] = INDEPENDENCE_CONFIRMED_BY_USER
+    if not (paths.output / 'external' / 'manifest.csv').exists():
+        external_frame, external_report = prepare_external_dataset(paths, EXTERNAL_ROOT, external_spec)
+    else:
+        external_frame, external_report = load_external_manifest(paths, EXTERNAL_ROOT)
+    display(external_report)
+    if not EXTERNAL_AUDIT_REVIEWED:
+        raise RuntimeError('Review external/audit.csv, support counts, excluded classes and near-match screening before enabling EXTERNAL_AUDIT_REVIEWED.')
+    for architecture in selection['winners']:
+        tf.keras.backend.clear_session()
+        display(evaluate_external(architecture, paths, EXTERNAL_ROOT))
+        display(analyze_external_errors(paths, architecture))  # Fill the generated annotation template for subgroup analysis.
+display(generate_final_comparison(paths))
+""")
+section("15. Gradio demonstration of the validation-selected model",
         "Expected: inline interface and optional temporary share link. Only project checkpoints are accepted; metrics are read from matching saved evaluation files. SHARE=True exposes a temporary public demo while the runtime is alive. It expires when hosting stops. Set False for inline-only use.", """
 from src.app import create_app
 SHARE = True
@@ -187,8 +243,10 @@ Inspect both histories, confusion matrices, per-class reports and timing records
 Review correct and failed predictions and Grad-CAM examples. Save your real demo
 screenshots. Follow `docs/REPORT_AND_PRESENTATION.md` and `docs/VIVA.md`.
 No real experiment results exist until you execute this workflow on PlantVillage.
-Optional PlantDoc, ConvNeXt and calibration are deferred; no external generalization
-claim is made.
+External results are available only if the optional cells ran on actual reviewed
+data. The 90% independent-field target is a research goal, not a promised or
+automatically established result. Validation thresholds do not calibrate softmax
+or guarantee future precision. No external images are used for training.
 """)
 nb = {"cells": cells, "metadata": {"colab": {"name": "AgriVision_AI_Complete.ipynb", "provenance": []},
       "accelerator": "GPU", "kernelspec": {"name": "python3", "display_name": "Python 3"},

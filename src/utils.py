@@ -79,7 +79,7 @@ def training_source_hash():
     """Portable fingerprint of source that affects the training experiment."""
     folder = Path(__file__).resolve().parent
     digest = hashlib.sha256()
-    for name in ("config.py", "dataset.py", "preprocessing.py", "augmentation.py", "models.py", "training.py", "utils.py"):
+    for name in ("config.py", "dataset.py", "preprocessing.py", "augmentation.py", "models.py", "training.py", "utils.py", "metrics.py", "validation.py", "experiments.py", "external.py"):
         digest.update(name.encode("utf-8"))
         digest.update((folder / name).read_text(encoding="utf-8").encode("utf-8"))
     return digest.hexdigest()

@@ -59,6 +59,10 @@ PlantVillage → RGB audit + duplicate groups → frozen train/validation/test
   reduction and resumable full-model epoch checkpoints on persistent storage.
 - Actual held-out metrics, per-class reports, confusion matrices, training time
   and synchronized single-image inference latency with architecture comparison.
+- Controlled validation-only trials, macro-F1 checkpointing, optional AdamW/
+  label smoothing, balanced accuracy, confidence diagnostics and rejection profiles.
+- Explicitly mapped external evaluation with overlap screening, frozen selection,
+  internal matched-class comparisons and optional human-annotated error analysis.
 - Grad-CAM for both nested backbones, top-three predictions, confidence warnings,
   source-backed static disease records and a green Gradio Blocks interface.
 
@@ -66,6 +70,11 @@ PlantVillage → RGB audit + duplicate groups → frozen train/validation/test
 has been performed during development. No real accuracy, external generalization
 result or screenshot is supplied. Synthetic CPU tests verify software only.
 See [validation notes](docs/VALIDATION.md).
+The [optimization plan](docs/OPTIMIZATION_PLAN.md) separates the 90% independent
+real-world accuracy target from achieved software checks and pending experiments.
+No independent real-world target has been verified.
+Current executed checks and pending outcomes are recorded in
+[OPTIMIZATION_VALIDATION.md](docs/OPTIMIZATION_VALIDATION.md).
 The [initial audit](docs/AUDIT_INITIAL.md) records findings before fixes; the
 [final audit](docs/AUDIT_FINAL.md) lists evidence, fixes and publication gates.
 
@@ -82,6 +91,11 @@ src/dataset.py                        Audit, hashes, reports and frozen splits
 src/preprocessing.py                  Shared RGB decode and resize
 src/augmentation.py                   Training-only Keras transforms
 src/models.py                         Both architectures
+src/metrics.py                        Balanced/class metrics and confidence diagnostics
+src/validation.py                     Validation-only scoring and rejection threshold
+src/experiments.py                    Controlled trials, frozen selection and exports
+src/external.py                       Reviewed external mapping/audit/evaluation
+src/error_analysis.py                 Saved errors and human-annotated subgroups
 src/training.py                       Two-stage training and resumption
 src/evaluation.py                     Metrics and comparison
 src/gradcam.py                        Nested-backbone explanations
@@ -106,10 +120,13 @@ outputs/                              Ignored experiment artifacts
 3. Inspect TensorFlow/GPU first, set the repository URL, clone code and install
    `requirements-colab.txt`, which preserves Colab's TensorFlow installation.
 4. Mount Drive, configure paths, upload the original color PlantVillage ZIP.
-5. Extract and inspect the audit; train both models on the same frozen split.
-6. Evaluate, independently check Grad-CAM and launch Gradio.
+5. Extract and inspect the audit; train controlled trials on the same frozen split.
+6. Freeze validation-selected winners, evaluate internal/optional external data,
+   check both Grad-CAM implementations and launch the versioned Gradio demo.
 
 Full instructions: [Colab execution guide](docs/COLAB_GUIDE.md).
+For the current optimization study use the detailed
+[training and external evaluation guide](docs/TRAINING_GUIDE.md).
 
 ## Local development
 
@@ -134,6 +151,8 @@ passes/Grad-CAM at 224×224: `python scripts/audit_pretrained.py`. Weights remai
 in ignored outputs/audit-cache. This measures no plant-disease accuracy.
 
 Example commands from the repository root:
+For this study, run real disease-model training in Colab. These local terminal
+examples remain available for development; CPU tests use synthetic fixtures only.
 
 ```powershell
 python -m src.cli environment --output "D:/AgriVision/experiment01"
@@ -164,8 +183,9 @@ Healthy is a predicted class, not proof of absence of every pest/disease. Altern
 label spellings still train through the discovered mapping but may receive an
 information fallback. No professional treatment or chemical dosage is generated.
 
-PlantDoc, ConvNeXt and calibration remain optional future work. No external
-generalization experiment is claimed.
+PlantDoc evaluation is implemented but pending actual reviewed data. ConvNeXt
+and temperature scaling remain future work. No external generalization result
+is claimed.
 
 ## Training, evaluation and Grad-CAM
 
@@ -176,8 +196,9 @@ repair of best.keras after interruption. Only finite epoch metrics are committed
 
 Evaluation uses the held-out test manifest after validation-based selection.
 Accuracy, macro precision/recall/F1, weighted F1, per-class reports and confusion
-matrices are saved. Comparison requires both current model/evaluation files and
-the same config/mapping/split. `latency_comparable` flags whether recorded timing
+matrices are saved. Comparison requires current model/evaluation files and matching
+source/mapping/splits. Baseline comparison requires equal configs; selected-pipeline
+comparison discloses differing winning configs. `latency_comparable` flags whether recorded timing
 contexts match; timings from different contexts are not a controlled speed comparison.
 
 Grad-CAM weights convolutional maps using spatially averaged gradients of the
@@ -195,10 +216,10 @@ unavailable status. A Colab share link is temporary and depends on the live sess
 
 ## Results — pending real experiments
 
-| Architecture | PlantVillage accuracy / macro F1 | Training status |
-|---|---|---|
-| EfficientNetB0 | Pending real evaluation | No disease training performed |
-| MobileNetV3Large | Pending real evaluation | No disease training performed |
+| Architecture | PlantVillage accuracy / macro F1 | External accuracy / macro F1 | Training status |
+|---|---|---|---|
+| EfficientNetB0 | Pending real evaluation | Not evaluated | No disease training performed |
+| MobileNetV3Large | Pending real evaluation | Not evaluated | No disease training performed |
 
 CPU software checks and ImageNet-backbone checks are not disease-classification
 experiments. Do not insert numerical performance or screenshots until collected
@@ -206,8 +227,8 @@ from the actual dataset workflow.
 
 ## Future scope and references
 
-Future experiments can add compatible-class PlantDoc evaluation, calibration,
-multiple seeds and more diverse field imagery after the baseline runs succeed.
+Future experiments can execute the implemented compatible-class PlantDoc workflow,
+add calibration, multiple seeds and more diverse independently collected field imagery.
 Primary papers, framework documentation and disease references are listed in
 [REFERENCES.md](docs/REFERENCES.md); each verified disease record also links to
 its source directly.

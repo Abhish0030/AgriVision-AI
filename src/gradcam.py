@@ -49,3 +49,24 @@ def gradcam(model, image, class_index=None, alpha=.4):
     return {"original": original, "heatmap": colored, "overlay": overlay,
             "values": heatmap, "layer": target, "class_index": selected,
             "zero_map": bool(np.max(heatmap) == 0)}
+
+
+def save_error_examples(model, predictions, dataset_root, output_directory, per_outcome=2):
+    """Save correct and incorrect examples without presenting only successes."""
+    from pathlib import Path
+    from PIL import Image
+    from .utils import confined_path
+    output_directory = Path(output_directory)
+    output_directory.mkdir(parents=True, exist_ok=True)
+    records = []
+    for outcome, mask in (("correct", predictions.label == predictions.predicted_label),
+                          ("incorrect", predictions.label != predictions.predicted_label)):
+        subset = predictions[mask].sort_values("confidence", ascending=False).head(per_outcome)
+        for index, row in enumerate(subset.itertuples()):
+            cam = gradcam(model, confined_path(dataset_root, row.path), int(row.predicted_label))
+            destination = output_directory / f"{outcome}_{index}_overlay.png"
+            Image.fromarray(cam["overlay"]).save(destination)
+            records.append({"outcome": outcome, "source_path": row.path, "true_label": int(row.label),
+                            "predicted_label": int(row.predicted_label), "confidence": float(row.confidence),
+                            "overlay": str(destination), "zero_positive_map": cam["zero_map"]})
+    return records
