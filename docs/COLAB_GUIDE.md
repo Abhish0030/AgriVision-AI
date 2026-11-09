@@ -1,5 +1,10 @@
 # Complete Colab execution guide
 
+For optional visual interpretation after CNN prediction, follow
+[AGENT_GUIDE.md](AGENT_GUIDE.md). The notebook includes a disabled-by-default
+private Colab Secrets setup cell before the Gradio demo. This feature requires
+both completed CNN checkpoints; training itself never calls the agent API.
+
 For the current validation-trial and independent external-evaluation workflow,
 follow [TRAINING_GUIDE.md](TRAINING_GUIDE.md). The main notebook now implements
 that workflow. The baseline setup details below remain useful context.

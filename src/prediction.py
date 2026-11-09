@@ -51,7 +51,7 @@ class PlantDiseasePredictor:
                 metrics["external_evaluation"] = {"status": "External evaluation not yet available or artifacts do not match"}
         return metrics
 
-    def predict_plant_disease(self, image, confidence_threshold=None):
+    def predict_plant_disease(self, image, confidence_threshold=None, *, explain=True):
         original = read_rgb(image)
         use_validation = confidence_threshold is None and self.rejection_profile is not None
         threshold = (self.rejection_profile["threshold"] if use_validation else
@@ -66,7 +66,7 @@ class PlantDiseasePredictor:
         confidence = float(probabilities[indices[0]])
         warning = ("Uncertain prediction. Please upload a clearer image or consult an agricultural expert."
                    if confidence < threshold or (use_validation and self.rejection_profile["reject_all"]) else "")
-        visualization = gradcam(self.model, original, int(indices[0]))
+        visualization = gradcam(self.model, original, int(indices[0])) if explain else None
         return {"class_name": label, "crop": crop, "disease": disease, "confidence_percent": confidence * 100,
                 "model_version": self.version, "rejection_threshold": threshold,
                 "threshold_source": "validation" if use_validation else "manual override" if confidence_threshold is not None else "configured heuristic",

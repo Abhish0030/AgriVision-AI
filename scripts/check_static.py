@@ -5,7 +5,7 @@ from pathlib import Path
 import nbformat
 
 root = Path(__file__).resolve().parents[1]
-files = [*root.joinpath("src").glob("*.py"), *root.joinpath("scripts").glob("*.py"),
+files = [*root.joinpath("src").rglob("*.py"), *root.joinpath("scripts").glob("*.py"),
          *root.joinpath("tests").glob("*.py"), root / "app.py"]
 for path in files:
     ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

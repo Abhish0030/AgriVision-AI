@@ -230,7 +230,27 @@ if RUN_EXTERNAL_EVALUATION:
         display(analyze_external_errors(paths, architecture))  # Fill the generated annotation template for subgroup analysis.
 display(generate_final_comparison(paths))
 """)
-section("15. Gradio demonstration of the validation-selected model",
+section("15. Optional private visual interpretation setup",
+        "Disabled by default. See docs/AGENT_GUIDE.md. Privately add OPENROUTER_API_KEY and AGENT_SYSTEM_PROMPT in Colab Secrets and grant notebook access. Instructions are intentionally absent from Git. Enabling sends only the current inference image and CNN context to an external service. Missing setup preserves CNN-only prediction. Never print secrets or paste them into cells.", """
+import os
+ENABLE_PRIVATE_ANALYSIS = False
+os.environ['AGENT_MODE'] = 'off'
+if ENABLE_PRIVATE_ANALYSIS:
+    from google.colab import userdata
+    try:
+        private_values = {name: userdata.get(name) for name in ('OPENROUTER_API_KEY', 'AGENT_SYSTEM_PROMPT')}
+        if not all(private_values.values()):
+            raise ValueError('Incomplete private setup')
+        os.environ.update(private_values)
+        os.environ['AGENT_MODE'] = 'detailed'
+        del private_values
+        print('Private analysis configured. Classifier outputs remain unchanged.')
+    except Exception:
+        os.environ['AGENT_MODE'] = 'off'
+        private_values = None
+        print('Private analysis disabled; check Secrets access privately. CNN-only operation remains available.')
+""")
+section("16. Gradio demonstration of the validation-selected model",
         "Expected: inline interface and optional temporary share link. Only project checkpoints are accepted; metrics are read from matching saved evaluation files. SHARE=True exposes a temporary public demo while the runtime is alive. It expires when hosting stops. Set False for inline-only use.", """
 from src.app import create_app
 SHARE = True

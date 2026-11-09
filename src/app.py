@@ -1,5 +1,10 @@
 """Green Gradio Blocks demo; model metrics always come from saved evaluation."""
 import gradio as gr
+from collections import OrderedDict
+import threading
+import time
+from .agents.nemotron_agent import NemotronAgent, FALLBACK
+from .agents.prediction_orchestrator import interpret, report_html
 from .disease_information import information_markdown
 from .prediction import PlantDiseasePredictor
 from .utils import read_json
@@ -13,6 +18,10 @@ LIMITATIONS = ("Research demonstration for supported crop classes. PlantVillage 
 
 def create_app(paths, config):
     cache = {}
+    agent = NemotronAgent(paths.repository)
+    inference_lock = threading.RLock()
+    jobs_lock = threading.Lock()
+    jobs = OrderedDict()
     selection_path = paths.output / "evaluation" / "selection.json"
     selected_default = read_json(selection_path)["overall_best_architecture"] if selection_path.exists() else config.architectures[0]
     if not selection_path.exists():
@@ -27,12 +36,26 @@ def create_app(paths, config):
             cache[name] = PlantDiseasePredictor(paths, name)
         return cache[name]
 
-    def analyze(image, architecture, threshold):
+    def invalidate(request: gr.Request):
+        with jobs_lock:
+            jobs.pop(request.session_hash, None)
+        return ""
+
+    def analyze(image, architecture, threshold, request: gr.Request = None):
         if not image:
             raise gr.Error("Upload a JPG, JPEG or PNG leaf image first.")
         try:
-            predictor = load(architecture)
-            result = predictor.predict_plant_disease(image, None if threshold == 0 else threshold)
+            with inference_lock:
+                predictor = load(architecture)
+                result = predictor.predict_plant_disease(image, None if threshold == 0 else threshold)
+            if request is not None and request.session_hash:
+                # Store only minimal classifier data in bounded backend memory.
+                reduced = {key: value for key, value in result.items() if key != "gradcam"}
+                with jobs_lock:
+                    jobs[request.session_hash] = (time.monotonic(), str(image), architecture, threshold, reduced)
+                    jobs.move_to_end(request.session_hash)
+                    while len(jobs) > 64:
+                        jobs.popitem(last=False)
         except (OSError, ValueError, RuntimeError) as exc:
             raise gr.Error(str(exc)) from exc
         cam = result["gradcam"]
@@ -50,6 +73,28 @@ def create_app(paths, config):
                 cam["original"], cam["heatmap"], cam["overlay"], explanation,
                 information_markdown(result["information"]), metrics,
                 "Supported classes:\n\n" + "\n".join("- " + label for label in predictor.classes))
+
+    def background_analysis(image, architecture, threshold, request: gr.Request):
+        session = request.session_hash
+        with jobs_lock:
+            job = jobs.get(session)
+        if not job or job[1:4] != (str(image), architecture, threshold) or time.monotonic() - job[0] > 180:
+            return gr.skip()
+        if not agent.enabled:
+            return FALLBACK
+        # Only model execution holds this lock; network waiting cannot delay a new CNN result.
+        def secondary(name):
+            class LockedPredictor:
+                def predict_plant_disease(self, *args, **kwargs):
+                    with inference_lock:
+                        return load(name).predict_plant_disease(*args, **kwargs)
+            return LockedPredictor()
+        outcome = interpret(image, architecture, job[4], secondary, agent)
+        with jobs_lock:
+            if jobs.get(session) is not job:
+                return gr.skip()  # An upload/reset/new prediction invalidated this result.
+            jobs.pop(session, None)
+        return report_html(outcome)
 
     with gr.Blocks(theme=gr.themes.Soft(primary_hue="green"), title="AgriVision AI") as demo:
         gr.Markdown("# 🌿 AgriVision AI\nIntelligent Plant Disease Detection and Explainable AI")
@@ -69,13 +114,24 @@ def create_app(paths, config):
             overlay = gr.Image(label="Overlay", interactive=False)
         explanation = gr.Markdown("Grad-CAM does not prove a prediction is correct.")
         information = gr.Markdown()
+        gr.Markdown("Optional visual interpretation sends this uploaded image to an external analysis service when configured. "
+                    "It does not change the classifier prediction or confidence.")
+        analysis = gr.HTML(label="AI-assisted visual analysis", value="")
         with gr.Accordion("Model information", open=True):
             classes = gr.Markdown("Supported classes are loaded from the selected trained model.")
             metrics = gr.JSON(value={"status": "Evaluation not yet available"}, label="Actual saved evaluation")
             gr.Markdown(LIMITATIONS)
         outputs = [summary, top, warning, original, heatmap, overlay, explanation, information, metrics, classes]
-        analyze_button.click(analyze, [image, architecture, threshold], outputs, concurrency_limit=1, show_progress="full", api_name="analyze")
-        gr.ClearButton([image, *outputs], value="Reset all")
+        event = analyze_button.click(analyze, [image, architecture, threshold], outputs, concurrency_limit=1,
+                                     concurrency_id="cnn", show_progress="full", api_name="analyze")
+        event.success(background_analysis, [image, architecture, threshold], analysis, concurrency_limit=1,
+                      concurrency_id="visual_analysis", api_name=False, show_progress="minimal")
+        image.change(invalidate, outputs=analysis, queue=False, api_name=False)
+        architecture.change(invalidate, outputs=analysis, queue=False, api_name=False)
+        threshold.change(invalidate, outputs=analysis, queue=False, api_name=False)
+        reset = gr.ClearButton([image, *outputs, analysis], value="Reset all")
+        reset.click(invalidate, outputs=analysis, queue=False, api_name=False)
+        clear.click(invalidate, outputs=analysis, queue=False, api_name=False)
         clear.click(lambda: (None, "", None, "", None, None, None, "", "", {"status": "Evaluation not yet available"}, ""),
                     outputs=[image, *outputs], queue=False)
     return demo.queue(default_concurrency_limit=1)

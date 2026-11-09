@@ -22,9 +22,9 @@ for relative in files:
         issues.append((relative, "file over 5 MB; review before publication"))
     if path.suffix.lower() in {".keras", ".h5", ".ckpt", ".zip", ".pem", ".key", ".p12", ".pfx"}:
         issues.append((relative, "model/archive/key artifact eligible for publication"))
-    if relative.startswith(("data/", "outputs/", ".venv/", "venv/", "node_modules/")) and path.name != ".gitkeep":
+    if relative.startswith(("data/", "outputs/", ".venv/", "venv/", "node_modules/", "secrets/")) and path.name != ".gitkeep":
         issues.append((relative, "runtime/data/dependency file eligible for publication"))
-    if path.name == ".env" or (path.name.startswith(".env.") and path.name != ".env.example") or path.name in {"kaggle.json", "token.json", "token.pickle"}:
+    if path.name == ".env" or (path.name.startswith(".env.") and path.name != ".env.example") or path.name in {"kaggle.json", "token.json", "token.pickle", "secrets.json", "agent_system_prompt.txt"}:
         issues.append((relative, "credential filename eligible for publication"))
     content = path.read_text(encoding="utf-8", errors="replace")
     for kind, pattern in patterns.items():

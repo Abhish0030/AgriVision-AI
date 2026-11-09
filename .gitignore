@@ -38,5 +38,6 @@ credentials*.json
 service-account*.json
 kaggle.json
 secrets/
+secrets.json
 checkpoints/
 experiments/

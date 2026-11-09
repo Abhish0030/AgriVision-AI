@@ -216,6 +216,13 @@ unavailable status. A Colab share link is temporary and depends on the live sess
 
 ## Results — pending real experiments
 
+Optional background visual interpretation is available through OpenRouter.
+It runs after the CNN result, compares both architectures and appends validated
+observations without changing classifications or confidence. Setup requires
+private credentials and separately transferred instructions; neither is stored
+in Git. See [the agent setup and evaluation guide](docs/AGENT_GUIDE.md).
+Live authenticated inference and any effect on user decisions remain unverified.
+
 | Architecture | PlantVillage accuracy / macro F1 | External accuracy / macro F1 | Training status |
 |---|---|---|---|
 | EfficientNetB0 | Pending real evaluation | Not evaluated | No disease training performed |
