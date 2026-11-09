@@ -1,0 +1,11 @@
+# In Colab use src.bootstrap.install_colab_dependencies(), which constrains the
+# preinstalled TensorFlow stack before resolving these supporting libraries.
+numpy>=1.26,<2.3
+pandas>=2.1,<3
+matplotlib>=3.8,<4
+seaborn>=0.13,<0.14
+scikit-learn>=1.4,<2
+opencv-python-headless>=4.10,<5
+Pillow>=10,<12
+gradio>=5.49,<6
+packaging>=23,<27

@@ -1,0 +1,39 @@
+{
+  "seed": 42,
+  "crops": [
+    "Tomato",
+    "Potato",
+    "Corn",
+    "Apple"
+  ],
+  "architectures": [
+    "EfficientNetB0",
+    "MobileNetV3Large"
+  ],
+  "image_size": [
+    224,
+    224
+  ],
+  "batch_size": 32,
+  "head_epochs": 5,
+  "fine_tune_epochs": 10,
+  "head_learning_rate": 0.001,
+  "fine_tune_learning_rate": 1e-05,
+  "dropout": 0.3,
+  "fine_tune_layers": 30,
+  "patience": 4,
+  "near_duplicate_distance": 4,
+  "class_weighting": true,
+  "train_fraction": 0.7,
+  "validation_fraction": 0.15,
+  "test_fraction": 0.15,
+  "confidence_threshold": 0.7,
+  "request_mixed_precision": true,
+  "deterministic_ops": true,
+  "input_pixel_range": [
+    0.0,
+    255.0
+  ],
+  "built_in_preprocessing": true,
+  "dataset_name": "PlantVillage"
+}
