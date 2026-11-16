@@ -1,0 +1,313 @@
+{
+  "Pepper__bell___Bacterial_spot": {
+    "plant": "Bell Pepper",
+    "disease": "Bacterial Spot",
+    "status": "diseased",
+    "description": "A bacterial disease commonly associated with Xanthomonas species. It can cause small, water-soaked leaf spots that become brown or dark and may lead to leaf drop.",
+    "management": [
+      "Remove heavily affected plant material where practical.",
+      "Avoid handling plants when foliage is wet.",
+      "Avoid overhead irrigation when possible.",
+      "Improve airflow around plants.",
+      "Consult local agricultural guidance for approved control options."
+    ],
+    "prevention": [
+      "Use certified disease-free seeds or transplants.",
+      "Clean tools and equipment between plantings.",
+      "Avoid working among wet plants.",
+      "Rotate with non-host crops where practical.",
+      "Monitor plants regularly for early symptoms."
+    ],
+    "precautions": "Bacterial diseases may not respond to fungicides intended for fungal pathogens. Confirm the diagnosis before selecting a treatment."
+  },
+  "Pepper__bell___healthy": {
+    "plant": "Bell Pepper",
+    "disease": "Healthy",
+    "status": "healthy",
+    "description": "The leaf appears consistent with healthy bell pepper foliage within the model's supported categories.",
+    "management": [
+      "Continue regular plant monitoring.",
+      "Maintain appropriate irrigation.",
+      "Provide balanced nutrition based on crop needs.",
+      "Remove weeds and unnecessary plant debris."
+    ],
+    "prevention": [
+      "Use healthy planting material.",
+      "Maintain good drainage.",
+      "Inspect leaves regularly.",
+      "Keep tools and growing areas clean."
+    ],
+    "precautions": "A healthy prediction does not guarantee that the entire plant is free of disease or pests."
+  },
+  "Potato___Early_blight": {
+    "plant": "Potato",
+    "disease": "Early Blight",
+    "status": "diseased",
+    "description": "A fungal disease commonly caused by Alternaria solani. It often produces brown lesions with concentric rings, especially on older leaves.",
+    "management": [
+      "Remove severely affected foliage where appropriate.",
+      "Reduce prolonged leaf wetness.",
+      "Maintain adequate plant nutrition.",
+      "Improve airflow where practical.",
+      "Seek local advice about approved fungicide programs if needed."
+    ],
+    "prevention": [
+      "Use healthy seed potatoes.",
+      "Rotate crops with non-host plants.",
+      "Manage crop residue appropriately.",
+      "Avoid unnecessary plant stress.",
+      "Monitor older leaves for early symptoms."
+    ],
+    "precautions": "Early blight can resemble other leaf-spot diseases. Confirm symptoms before treatment."
+  },
+  "Potato___Late_blight": {
+    "plant": "Potato",
+    "disease": "Late Blight",
+    "status": "diseased",
+    "description": "A serious disease caused by the water mold Phytophthora infestans. It can produce rapidly expanding dark lesions and may also affect tubers.",
+    "management": [
+      "Inspect nearby plants promptly for similar symptoms.",
+      "Avoid moving infected plant material between fields.",
+      "Reduce prolonged foliage wetness where possible.",
+      "Follow local extension guidance for urgent disease management.",
+      "Use only locally approved crop-protection products when advised."
+    ],
+    "prevention": [
+      "Use certified disease-free seed potatoes.",
+      "Eliminate volunteer potatoes and infected cull piles.",
+      "Monitor weather conditions favorable to late blight.",
+      "Inspect crops frequently during cool, wet periods.",
+      "Follow locally recommended preventive management programs."
+    ],
+    "precautions": "Late blight can spread rapidly and cause major crop losses. Seek prompt professional advice when suspected."
+  },
+  "Potato___healthy": {
+    "plant": "Potato",
+    "disease": "Healthy",
+    "status": "healthy",
+    "description": "The leaf appears consistent with healthy potato foliage within the model's supported categories.",
+    "management": [
+      "Maintain regular crop monitoring.",
+      "Provide appropriate irrigation and nutrition.",
+      "Inspect plants for pests and disease symptoms.",
+      "Maintain good field hygiene."
+    ],
+    "prevention": [
+      "Use certified healthy seed potatoes.",
+      "Practice suitable crop rotation.",
+      "Manage volunteer potato plants.",
+      "Maintain proper drainage.",
+      "Monitor weather-related disease risks."
+    ],
+    "precautions": "A healthy leaf prediction does not rule out diseases affecting other plant parts or tubers."
+  },
+  "Tomato_Bacterial_spot": {
+    "plant": "Tomato",
+    "disease": "Bacterial Spot",
+    "status": "diseased",
+    "description": "A bacterial disease associated with Xanthomonas species. It may produce small dark leaf spots and can affect stems and fruits.",
+    "management": [
+      "Avoid working with plants while foliage is wet.",
+      "Remove severely affected plant material where appropriate.",
+      "Reduce overhead irrigation.",
+      "Improve airflow around plants.",
+      "Consult local agricultural guidance for approved management options."
+    ],
+    "prevention": [
+      "Use disease-free seeds and transplants.",
+      "Clean tools and growing equipment.",
+      "Avoid unnecessary leaf wetness.",
+      "Rotate crops where practical.",
+      "Monitor plants for early symptoms."
+    ],
+    "precautions": "Confirm bacterial spot before treatment. Management differs from that of fungal leaf diseases."
+  },
+  "Tomato_Early_blight": {
+    "plant": "Tomato",
+    "disease": "Early Blight",
+    "status": "diseased",
+    "description": "A fungal disease commonly associated with Alternaria species. It often causes brown leaf spots with concentric rings and surrounding yellowing.",
+    "management": [
+      "Remove heavily affected lower leaves when practical.",
+      "Avoid splashing water onto foliage.",
+      "Use mulch to reduce soil splash.",
+      "Improve airflow around plants.",
+      "Consult local guidance about approved fungicides if needed."
+    ],
+    "prevention": [
+      "Rotate crops with non-host plants.",
+      "Avoid prolonged foliage wetness.",
+      "Maintain balanced plant nutrition.",
+      "Remove or manage infected crop debris.",
+      "Inspect older leaves regularly."
+    ],
+    "precautions": "Several tomato diseases produce similar leaf spots. Confirm the diagnosis before applying treatments."
+  },
+  "Tomato_Late_blight": {
+    "plant": "Tomato",
+    "disease": "Late Blight",
+    "status": "diseased",
+    "description": "A serious disease caused by Phytophthora infestans. It can produce rapidly expanding, water-soaked or dark lesions on leaves and stems, and may damage fruit.",
+    "management": [
+      "Inspect surrounding tomato and potato plants immediately.",
+      "Avoid moving potentially infected plant material.",
+      "Reduce prolonged foliage wetness where possible.",
+      "Seek prompt local agricultural advice.",
+      "Follow locally approved disease-management recommendations."
+    ],
+    "prevention": [
+      "Use healthy transplants.",
+      "Monitor crops during cool, humid weather.",
+      "Improve airflow between plants.",
+      "Avoid unnecessary overhead irrigation.",
+      "Remove volunteer host plants and manage infected debris safely."
+    ],
+    "precautions": "Suspected late blight requires prompt attention because it can spread rapidly. Confirm the diagnosis with a qualified agricultural professional."
+  },
+  "Tomato_Leaf_Mold": {
+    "plant": "Tomato",
+    "disease": "Leaf Mold",
+    "status": "diseased",
+    "description": "A fungal disease caused by Passalora fulva. It commonly produces yellow patches on upper leaf surfaces and olive-green to brown mold on the undersides, especially in humid conditions.",
+    "management": [
+      "Improve greenhouse or growing-area ventilation.",
+      "Reduce excessive humidity.",
+      "Avoid wetting leaves unnecessarily.",
+      "Remove heavily affected foliage where practical.",
+      "Consult local guidance if additional control is needed."
+    ],
+    "prevention": [
+      "Maintain adequate plant spacing.",
+      "Improve airflow and humidity control.",
+      "Use resistant varieties when available.",
+      "Remove infected crop debris.",
+      "Monitor leaves, including their undersides."
+    ],
+    "precautions": "Leaf mold is favored by humid conditions. Environmental management is an important part of control."
+  },
+  "Tomato_Septoria_leaf_spot": {
+    "plant": "Tomato",
+    "disease": "Septoria Leaf Spot",
+    "status": "diseased",
+    "description": "A fungal disease caused by Septoria lycopersici. It commonly causes numerous small leaf spots with pale centers and darker margins.",
+    "management": [
+      "Remove heavily affected lower leaves where practical.",
+      "Avoid splashing water onto foliage.",
+      "Apply mulch to reduce soil splash.",
+      "Improve airflow around plants.",
+      "Seek local guidance about approved control measures."
+    ],
+    "prevention": [
+      "Rotate crops where appropriate.",
+      "Manage infected plant debris.",
+      "Avoid prolonged leaf wetness.",
+      "Use suitable plant spacing.",
+      "Monitor lower leaves for early symptoms."
+    ],
+    "precautions": "Septoria leaf spot can resemble other tomato leaf-spot diseases. Confirm symptoms before treatment."
+  },
+  "Tomato_Spider_mites_Two_spotted_spider_mite": {
+    "plant": "Tomato",
+    "disease": "Two-Spotted Spider Mite Infestation",
+    "status": "diseased",
+    "description": "An infestation by the two-spotted spider mite, Tetranychus urticae. Feeding may cause tiny pale spots, yellowing, bronzing, and fine webbing.",
+    "management": [
+      "Inspect leaf undersides for mites and webbing.",
+      "Remove heavily infested leaves where practical.",
+      "Avoid unnecessary broad-spectrum insecticide use.",
+      "Support beneficial natural enemies when appropriate.",
+      "Consult local integrated pest management guidance."
+    ],
+    "prevention": [
+      "Monitor crops regularly, especially during hot, dry weather.",
+      "Avoid excessive plant stress.",
+      "Inspect new plants before introducing them.",
+      "Manage nearby weeds and alternative hosts.",
+      "Encourage beneficial predatory mites where appropriate."
+    ],
+    "precautions": "Spider mites are pests, not fungal pathogens. Fungicides intended for fungal diseases are not an appropriate mite treatment."
+  },
+  "Tomato__Target_Spot": {
+    "plant": "Tomato",
+    "disease": "Target Spot",
+    "status": "diseased",
+    "description": "A fungal disease commonly caused by Corynespora cassiicola. It may cause brown leaf lesions with concentric rings.",
+    "management": [
+      "Remove heavily affected foliage where appropriate.",
+      "Improve airflow between plants.",
+      "Reduce prolonged leaf wetness.",
+      "Manage infected crop residue.",
+      "Consult local guidance about approved control options."
+    ],
+    "prevention": [
+      "Use healthy planting material.",
+      "Maintain suitable plant spacing.",
+      "Avoid unnecessary overhead irrigation.",
+      "Practice crop sanitation.",
+      "Monitor leaves regularly for developing spots."
+    ],
+    "precautions": "Target spot can resemble early blight and other leaf diseases. Confirm the diagnosis before treatment."
+  },
+  "Tomato__Tomato_YellowLeaf__Curl_Virus": {
+    "plant": "Tomato",
+    "disease": "Tomato Yellow Leaf Curl Virus",
+    "status": "diseased",
+    "description": "A viral disease commonly transmitted by whiteflies. Affected plants may show yellowing, upward leaf curling, stunted growth, and reduced fruit production.",
+    "management": [
+      "Inspect plants for whiteflies.",
+      "Remove severely infected plants when locally recommended.",
+      "Manage whitefly populations using integrated pest management.",
+      "Control weeds that may serve as virus hosts.",
+      "Seek local advice about resistant varieties and vector control."
+    ],
+    "prevention": [
+      "Use healthy, virus-free transplants.",
+      "Choose resistant or tolerant varieties when available.",
+      "Monitor and manage whiteflies.",
+      "Use suitable insect-exclusion measures where practical.",
+      "Remove volunteer tomato plants and relevant weeds."
+    ],
+    "precautions": "There is no treatment that cures an already virus-infected plant. Management focuses on limiting spread and protecting healthy plants."
+  },
+  "Tomato__Tomato_mosaic_virus": {
+    "plant": "Tomato",
+    "disease": "Tomato Mosaic Virus",
+    "status": "diseased",
+    "description": "A viral disease that may cause mottled light- and dark-green patterns, leaf distortion, and reduced plant vigor.",
+    "management": [
+      "Avoid handling healthy plants after touching suspected infected plants.",
+      "Clean hands, tools, and equipment appropriately.",
+      "Remove infected plants when recommended by local guidance.",
+      "Avoid using infected plants for propagation.",
+      "Seek confirmation from an agricultural diagnostic service."
+    ],
+    "prevention": [
+      "Use certified healthy seeds and transplants.",
+      "Disinfect tools between plants.",
+      "Avoid unnecessary plant handling.",
+      "Use resistant varieties where available.",
+      "Remove infected crop residues appropriately."
+    ],
+    "precautions": "There is no cure for systemic tomato mosaic virus infection. Sanitation and prevention are essential."
+  },
+  "Tomato_healthy": {
+    "plant": "Tomato",
+    "disease": "Healthy",
+    "status": "healthy",
+    "description": "The leaf appears consistent with healthy tomato foliage within the model's supported categories.",
+    "management": [
+      "Continue regular plant monitoring.",
+      "Maintain appropriate irrigation.",
+      "Provide balanced plant nutrition.",
+      "Check for pests and unusual symptoms."
+    ],
+    "prevention": [
+      "Use healthy seeds and transplants.",
+      "Maintain suitable spacing and airflow.",
+      "Avoid unnecessary leaf wetness.",
+      "Practice good garden or field sanitation.",
+      "Monitor plants regularly."
+    ],
+    "precautions": "A healthy prediction does not guarantee that the plant is free from all diseases or pests."
+  }
+}

@@ -1,0 +1,70 @@
+{
+    "project": "AgriVision-AI",
+    "model_name": "MobileNetV3Large",
+    "model_version": "1.0",
+    "created_at_utc": "2026-11-15T11:31:41.221972+00:00",
+    "model_format": "TensorFlow SavedModel",
+    "model_directory": "mobilenetv3large_inference_savedmodel",
+    "serving_signature": "serving_default",
+    "input": {
+        "name": "plant_image",
+        "shape": [
+            null,
+            224,
+            224,
+            3
+        ],
+        "dtype": "float32",
+        "color_mode": "RGB",
+        "pixel_value_range": [
+            0,
+            255
+        ],
+        "resize": [
+            224,
+            224
+        ],
+        "normalization": "Do not divide by 255. MobileNetV3Large includes preprocessing."
+    },
+    "output": {
+        "shape": [
+            null,
+            15
+        ],
+        "type": "class_probabilities",
+        "activation": "softmax",
+        "number_of_classes": 15,
+        "class_names_file": "class_names.json",
+        "prediction_rule": "Apply argmax to the 15 output probabilities and map the index to class_names.json."
+    },
+    "training": {
+        "dataset": "PlantVillage",
+        "number_of_classes": 15,
+        "train_images": 14436,
+        "validation_images": 3094,
+        "test_images": 3094
+    },
+    "evaluation": {
+        "source_file": "results/mobilenetv3large/test_metrics.json",
+        "recorded_test_metrics": {
+            "model": "MobileNetV3Large",
+            "checkpoint": "/content/gdrive/MyDrive/AgriVision-AI/models/mobilenetv3large_phase2_best.keras",
+            "test_samples": 3094,
+            "correct_predictions": 2946,
+            "incorrect_predictions": 148,
+            "test_loss": 0.16805586218833923,
+            "test_accuracy": 0.9521654815772462,
+            "macro_precision": 0.9545464396281006,
+            "macro_recall": 0.9496633812647785,
+            "macro_f1": 0.9504293027482398,
+            "weighted_precision": 0.9541819493884848,
+            "weighted_recall": 0.9521654815772462,
+            "weighted_f1": 0.9517825494241299
+        }
+    },
+    "limitations": [
+        "Tomato Early Blight recall was 72% on the independent test set.",
+        "Performance on PlantVillage images may not generalize to real-world field photographs.",
+        "Predictions should not replace professional agricultural diagnosis."
+    ]
+}
