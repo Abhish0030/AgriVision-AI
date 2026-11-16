@@ -1,285 +1,218 @@
-# AgriVision AI
+<div align="center">
 
-**An Explainable Deep Learning-Based Multi-Crop Plant Disease Detection and Classification System**
+<img src="assets/banner.png" alt="AgriVision-AI — AI-powered plant leaf disease detection" width="100%" />
 
-TensorFlow/Keras research project for tomato, potato, maize and apple leaf images.
-Develop in VS Code, upload source to GitHub, then run the main notebook in Colab.
-Datasets, checkpoints and secrets remain outside Git.
+<br />
 
-Repository: [Abhish0030/AgriVision-AI](https://github.com/Abhish0030/AgriVision-AI).
-Open the [main notebook in Google Colab](https://colab.research.google.com/github/Abhish0030/AgriVision-AI/blob/main/notebooks/AgriVision_AI_Complete.ipynb).
-The repository's original README is preserved verbatim in
-[ORIGINAL_GITHUB_README.md](docs/ORIGINAL_GITHUB_README.md), alongside its original
-Git commit history.
+# 🌿 AgriVision-AI
+### AI-Powered Plant Leaf Disease Detection & Intelligent Crop Health Assistance
 
-## Problem and objectives
+**Upload a leaf. Explore its health. Discover actionable crop-care information.**
 
-Given one supported plant-leaf image, predict its joint crop/disease class and
-expose the evidence and uncertainty behind that prediction. Compare two transfer
-learning architectures on the same audited split, evaluate every class, and
-provide a simple demonstration whose metrics come from actual saved experiments.
-The application supports inspection and learning; it does not establish a field
-diagnosis from a photograph alone.
+[![Live Demo](https://img.shields.io/badge/🌐_LIVE_DEMO-Open_AgriVision--AI-12b981?style=for-the-badge)](https://agrivisionaa.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-Deep_Learning-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Web_App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
 
-## Colab dependency installation
+**[🚀 Try Live App](https://agrivisionaa.streamlit.app/)** · **[✨ Features](#-features)** · **[📊 Results](#-model-performance)** · **[⚙️ Run Locally](#️-run-locally)**
 
-Use the main notebook's installation cell, which calls:
+</div>
 
-```python
-from pathlib import Path
-from src.bootstrap import install_colab_dependencies
+---
 
-stack_versions = install_colab_dependencies(
-    CHECKOUT, Path('/content/agrivision-tf-constraints.txt')
-)
+## 🌱 Overview
+
+**AgriVision-AI** is a deep-learning-powered plant leaf screening application built with **MobileNetV3Large**, **TensorFlow**, and **Streamlit**. Upload an image of a **bell pepper, potato, or tomato** leaf to receive a predicted disease/healthy category, model confidence, alternative predictions, and supporting crop-health information.
+
+> [!IMPORTANT]
+> Predictions are AI-assisted screening results, not a laboratory diagnosis. Consult a qualified agricultural professional before making important crop-treatment decisions.
+
+## ✨ Features
+
+| Feature | What it does |
+|:--|:--|
+| 📸 **Drag-and-drop upload** | Upload a leaf image through the browser. |
+| 🧠 **MobileNetV3Large inference** | Classifies images into 15 supported leaf-health categories. |
+| 🌿 **Healthy / disease indication** | Displays a quick predicted health status. |
+| 📊 **Confidence & top predictions** | Shows model confidence and alternative class scores. |
+| 📚 **Crop-health knowledge base** | Offers disease information to support further investigation. |
+| 🌐 **Hosted demo** | Try the app without installing Python or downloading the model. |
+| 🎨 **Dark interface** | Clean, responsive Streamlit experience. |
+
+<div align="center">
+
+### ⚡ Launch the interactive demo
+
+**[🌿 OPEN AGRIVISION-AI →](https://agrivisionaa.streamlit.app/)**
+
+</div>
+
+## 📸 How It Works
+
+```mermaid
+flowchart LR
+    A[📷 Upload leaf image] --> B[🖼️ RGB resize to 224 × 224]
+    B --> C[🧠 MobileNetV3Large]
+    C --> D[📊 15-class probabilities]
+    D --> E[🌿 Predicted category]
+    D --> F[📈 Confidence & top-5]
+    E --> G[📚 Crop-health information]
 ```
 
-The installer pins the runtime's existing TensorFlow, Keras, NumPy, protobuf,
-ml-dtypes and h5py before installing `requirements-colab.txt` with pip's
-`only-if-needed` strategy. TensorFlow 2.21.0 and Keras 3.13.2 are retained when
-already installed; NumPy is not upgraded to resolve unrelated Colab conflicts.
-No CUDA packages or GPU settings are explicitly changed. An incompatible protected
-version causes an actionable project dependency error rather than a stack upgrade.
+1. **Open** the [live application](https://agrivisionaa.streamlit.app/).
+2. **Upload** a clear image of a tomato, potato, or bell pepper leaf.
+3. **Review** the predicted class and confidence score.
+4. **Explore** other likely classes and the accompanying disease information.
 
-Required package imports, supported version ranges and their active transitive
-dependencies are verified separately. Actual installed project/stack versions and
-GPU device listings are printed. Global `pip check` output is captured and shown
-as a **nonfatal warning** when project verification passes. Conflicts from unrelated
-Colab packages (such as IPython/jedi, hf-gradio, google-genai, python-fasthtml or
-google-adk) do not block training setup. Do not blindly upgrade Gradio Client or
-Starlette, uninstall Colab packages, or replace the working TensorFlow environment
-to clear those warnings.
+## 🍅 Supported Crops & Categories
 
-To recheck the project without installing anything:
+<details>
+<summary><strong>🍅 Tomato — 10 categories (click to expand)</strong></summary>
 
-```python
-from src.bootstrap import verify_project_dependencies
-project_versions = verify_project_dependencies(CHECKOUT)
-```
+- Bacterial spot
+- Early blight
+- Late blight
+- Leaf mold
+- Septoria leaf spot
+- Spider mites (two-spotted spider mite)
+- Target spot
+- Tomato yellow leaf curl virus
+- Tomato mosaic virus
+- Healthy
 
-An actual missing/incompatible project dependency or failed required import still
-raises an error. This local validation does not verify GPU training or execution
-inside your Colab runtime.
+</details>
 
-## Technology stack
+<details>
+<summary><strong>🥔 Potato — 3 categories (click to expand)</strong></summary>
 
-| Area | Tools |
-|---|---|
-| Language and development | Python, VS Code, Git/GitHub |
-| Training | TensorFlow/Keras, EfficientNetB0, MobileNetV3Large |
-| Intended execution | Google Colab T4; CPU fallback for development |
-| Images and data | Pillow, OpenCV, NumPy, Pandas |
-| Evaluation and plots | Scikit-learn, Matplotlib, Seaborn |
-| Explanation and demo | GradientTape Grad-CAM, Gradio Blocks |
-| Persistent storage | Configurable filesystem paths / Google Drive |
+- Early blight
+- Late blight
+- Healthy
 
-## Dataset and architecture
+</details>
 
-Supply original PlantVillage color images for Tomato, Potato, Corn (maize) and
-Apple. Classes are discovered rather than invented; no rice labels are assumed.
-See [dataset acquisition and provenance](docs/COLAB_GUIDE.md#dataset-upload).
+<details>
+<summary><strong>🫑 Bell Pepper — 2 categories (click to expand)</strong></summary>
+
+- Bacterial spot
+- Healthy
+
+</details>
+
+## 📊 Model Performance
+
+Results from the project's held-out test evaluation:
+
+| Metric | Result |
+|:--|--:|
+| **Test accuracy** | **95.22%** |
+| **Macro F1-score** | **0.9504** |
+| **Test images** | **3,094** |
+| **Unique dataset images** | **20,624** |
+| **Classes** | **15** |
+| **Architecture** | **MobileNetV3Large** |
+| **Input resolution** | **224 × 224 RGB** |
+
+> [!NOTE]
+> These figures describe performance on the project's PlantVillage test split. Real-world results can differ because of lighting, backgrounds, camera quality, and unfamiliar diseases.
+
+## 🧰 Tech Stack
+
+- **Deep learning:** TensorFlow / Keras, MobileNetV3Large
+- **Application:** Streamlit
+- **Image processing:** Pillow, NumPy
+- **Data handling:** pandas
+- **Dataset:** PlantVillage (selected tomato, potato, and bell pepper classes)
+- **Deployment:** Streamlit Community Cloud
+
+## 🗂️ Project Structure
 
 ```text
-PlantVillage → RGB audit + duplicate groups → frozen train/validation/test
-             → shared resize + training-only augmentation
-             → EfficientNetB0 / MobileNetV3Large
-             → global average pooling → dropout → float32 logits/softmax
-             → saved checkpoint + evaluation → Grad-CAM/prediction → Gradio
+AgriVision-AI/
+├── app/
+│   ├── app.py                         # Streamlit application (deployment entrypoint)
+│   └── knowledge_base/
+│       └── disease_information.json   # Crop-health information
+├── deployment/
+│   ├── class_names.json
+│   ├── model_metadata.json
+│   └── mobilenetv3large_inference_savedmodel/
+│       ├── saved_model.pb
+│       └── variables/
+├── assets/
+│   └── banner.png                     # README banner (add this folder)
+├── requirements.txt
+└── README.md
 ```
 
-## Implemented features
+> This repository may also contain earlier experiments, notebooks, scripts, and a legacy root-level `app.py`. **The live Streamlit entrypoint is `app/app.py`.**
 
-- PlantVillage audit, corrupted-file detection, class/dimension reports, exact
-  pixel deduplication and practical dHash near-duplicate grouping.
-- Frozen class-stratified group splits, approximately 70/15/15. Duplicate groups
-  stay in one split; conflicting near-match labels are quarantined.
-- EfficientNetB0 and MobileNetV3Large: ImageNet transfer learning, head training,
-  selected-tail fine-tuning, fixed BatchNorm and float32 classification output.
-- Training-only augmentation, class weighting, early stopping, learning-rate
-  reduction and resumable full-model epoch checkpoints on persistent storage.
-- Actual held-out metrics, per-class reports, confusion matrices, training time
-  and synchronized single-image inference latency with architecture comparison.
-- Controlled validation-only trials, macro-F1 checkpointing, optional AdamW/
-  label smoothing, balanced accuracy, confidence diagnostics and rejection profiles.
-- Explicitly mapped external evaluation with overlap screening, frozen selection,
-  internal matched-class comparisons and optional human-annotated error analysis.
-- Grad-CAM for both nested backbones, top-three predictions, confidence warnings,
-  source-backed static disease records and a green Gradio Blocks interface.
+## ⚙️ Run Locally
 
-**Research status:** no PlantVillage training, GPU experiment or Colab execution
-has been performed during development. No real accuracy, external generalization
-result or screenshot is supplied. Synthetic CPU tests verify software only.
-See [validation notes](docs/VALIDATION.md).
-The [optimization plan](docs/OPTIMIZATION_PLAN.md) separates the 90% independent
-real-world accuracy target from achieved software checks and pending experiments.
-No independent real-world target has been verified.
-Current executed checks and pending outcomes are recorded in
-[OPTIMIZATION_VALIDATION.md](docs/OPTIMIZATION_VALIDATION.md).
-The [initial audit](docs/AUDIT_INITIAL.md) records findings before fixes; the
-[final audit](docs/AUDIT_FINAL.md) lists evidence, fixes and publication gates.
+**Prerequisite:** Python **3.11** and Git.
 
-## Layout
-
-```text
-notebooks/AgriVision_AI_Complete.ipynb   Main Colab entry point
-src/config.py                         Settings and portable paths
-src/environment.py                    TensorFlow/GPU inspection and policy
-src/bootstrap.py                      Checked checkout and constrained Colab install
-src/artifacts.py                      Model/config/mapping integrity checks
-src/acquisition.py                    Safe upload-ZIP extraction
-src/dataset.py                        Audit, hashes, reports and frozen splits
-src/preprocessing.py                  Shared RGB decode and resize
-src/augmentation.py                   Training-only Keras transforms
-src/models.py                         Both architectures
-src/metrics.py                        Balanced/class metrics and confidence diagnostics
-src/validation.py                     Validation-only scoring and rejection threshold
-src/experiments.py                    Controlled trials, frozen selection and exports
-src/external.py                       Reviewed external mapping/audit/evaluation
-src/error_analysis.py                 Saved errors and human-annotated subgroups
-src/training.py                       Two-stage training and resumption
-src/evaluation.py                     Metrics and comparison
-src/gradcam.py                        Nested-backbone explanations
-src/prediction.py                     Checkpoint-backed inference
-src/disease_information.py            Static information lookup
-src/app.py                            Gradio Blocks
-src/cli.py                            Terminal entry point
-app.py                                Local demo launcher
-disease_info.json                     Reviewed sources and explicit fallbacks
-configs/default.json                  Editable experiment defaults
-scripts/                              Notebook builder and static checks
-tests/test_cpu_smoke.py                Temporary synthetic software fixtures
-docs/                                 Guides, methodology and viva
-data/                                 Ignored dataset storage
-outputs/                              Ignored experiment artifacts
-```
-
-## Colab workflow
-
-1. Follow [GitHub upload instructions](docs/GITHUB_GUIDE.md).
-2. Open the main notebook from GitHub in Colab and select a T4 GPU if available.
-3. Inspect TensorFlow/GPU first, set the repository URL, clone code and install
-   `requirements-colab.txt`, which preserves Colab's TensorFlow installation.
-4. Mount Drive, configure paths, upload the original color PlantVillage ZIP.
-5. Extract and inspect the audit; train controlled trials on the same frozen split.
-6. Freeze validation-selected winners, evaluate internal/optional external data,
-   check both Grad-CAM implementations and launch the versioned Gradio demo.
-
-Full instructions: [Colab execution guide](docs/COLAB_GUIDE.md).
-For the current optimization study use the detailed
-[training and external evaluation guide](docs/TRAINING_GUIDE.md).
-
-## Local development
-
-Use Python 3.11–3.13. Native Windows CPU execution supports development; Colab is
-the intended T4 training environment. ML code uses TensorFlow and `tf.keras` only.
-
-```powershell
+```bash
+git clone https://github.com/Abhish0030/AgriVision-AI.git
+cd AgriVision-AI
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\.venv\Scripts\python.exe scripts/check_static.py
-.\.venv\Scripts\python.exe -m ruff check .
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe scripts/check_repository.py
 ```
 
-Linux/macOS: use `.venv/bin/python`. Select that interpreter in VS Code. The smoke
-suite builds both real architectures with `weights=None` to avoid downloads; its
-tiny integration model is a temporary test fixture. Production training uses
-ImageNet weights and does not fall back to random initialization.
-An optional network check loads actual ImageNet backbones and checks forward
-passes/Grad-CAM at 224×224: `python scripts/audit_pretrained.py`. Weights remain
-in ignored outputs/audit-cache. This measures no plant-disease accuracy.
+Activate the virtual environment:
 
-Example commands from the repository root:
-For this study, run real disease-model training in Colab. These local terminal
-examples remain available for development; CPU tests use synthetic fixtures only.
+```bash
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
 
-```powershell
-python -m src.cli environment --output "D:/AgriVision/experiment01"
-python -m src.cli prepare --dataset "D:/PlantVillage/color" --output "D:/AgriVision/experiment01"
-python -m src.cli train --architecture EfficientNetB0 --dataset "D:/PlantVillage/color" --output "D:/AgriVision/experiment01" --config configs/default.json
-python -m src.cli train --architecture MobileNetV3Large --dataset "D:/PlantVillage/color" --output "D:/AgriVision/experiment01" --config configs/default.json
-python -m src.cli evaluate --architecture EfficientNetB0 --dataset "D:/PlantVillage/color" --output "D:/AgriVision/experiment01"
-python -m src.cli evaluate --architecture MobileNetV3Large --dataset "D:/PlantVillage/color" --output "D:/AgriVision/experiment01"
-python -m src.cli compare --output "D:/AgriVision/experiment01"
-python app.py --output "D:/AgriVision/experiment01"
+# macOS / Linux
+source .venv/bin/activate
 ```
 
-Explicit paths work across OSs. Defaults resolve from the source repository,
-not the current terminal directory. `AGRIVISION_DATA` and `AGRIVISION_OUTPUT`
-are optional environment alternatives. Pass matching `--config` for non-default
-image/batch settings during evaluation. The notebook imports these same modules.
+Install dependencies and start the app:
 
-## Scientific limits
+```bash
+pip install -r requirements.txt
+streamlit run app/app.py
+```
 
-PlantVillage backgrounds can cause shortcut learning. Grouped random splits are
-not field/site-disjoint experiments. dHash misses some similar images and can
-over-group others; review its reports. Softmax scores are uncalibrated and do not
-reject every unfamiliar/non-leaf upload. Grad-CAM does not prove a diagnosis.
+Open the local address printed by Streamlit (typically `http://localhost:8501`).
 
-Disease records provide concise nonchemical prevention information from university
-extension sources. Unknown/unverified records display “Information not verified yet”.
-Healthy is a predicted class, not proof of absence of every pest/disease. Alternate
-label spellings still train through the discovered mapping but may receive an
-information fallback. No professional treatment or chemical dosage is generated.
+> [!TIP]
+> The deployed model uses TensorFlow SavedModel inference. Its model files and metadata must remain inside `deployment/` as shown above. The app expects RGB input at 224 × 224; **do not manually divide pixel values by 255**, since MobileNetV3 includes its own preprocessing.
 
-PlantDoc evaluation is implemented but pending actual reviewed data. ConvNeXt
-and temperature scaling remain future work. No external generalization result
-is claimed.
+## ☁️ Deploy Your Own Copy
 
-## Training, evaluation and Grad-CAM
+1. Fork the repository.
+2. Visit [Streamlit Community Cloud](https://share.streamlit.io/).
+3. Choose the fork, branch `main`, and **main file path `app/app.py`**.
+4. Select **Python 3.11** in advanced settings.
+5. Deploy and test a real leaf upload.
 
-The CLI examples above and the notebook train a frozen head, then a selected
-backbone tail at a lower learning rate. BatchNorm stays fixed. Atomic epoch
-checkpoints preserve optimizer state; a committed best-epoch pointer allows
-repair of best.keras after interruption. Only finite epoch metrics are committed.
+## 🔭 Future Improvements
 
-Evaluation uses the held-out test manifest after validation-based selection.
-Accuracy, macro precision/recall/F1, weighted F1, per-class reports and confusion
-matrices are saved. Comparison requires current model/evaluation files and matching
-source/mapping/splits. Baseline comparison requires equal configs; selected-pipeline
-comparison discloses differing winning configs. `latency_comparable` flags whether recorded timing
-contexts match; timings from different contexts are not a controlled speed comparison.
+- 🌍 Evaluate on more real-field leaf photos.
+- 🪴 Extend beyond the current three crops.
+- 📱 Improve mobile-first usability and accessibility.
+- 🧪 Add uncertainty handling for unsupported plants and ambiguous images.
+- 🌐 Explore multilingual crop-health guidance.
 
-Grad-CAM weights convolutional maps using spatially averaged gradients of the
-selected logit, applies ReLU, normalizes and overlays the map. Both nested
-architectures are handled independently. Zero maps are reported honestly.
-See [methodology](docs/METHODOLOGY.md) for the full protocol.
+## 🤝 Contributing
 
-## Gradio demo
+Issues and pull requests are welcome. Please include reproduction steps for bugs and avoid uploading sensitive data or proprietary imagery.
 
-After training, run `python app.py --output PATH_TO_EXPERIMENT` or the notebook's
-demo cell. Upload JPG/JPEG/PNG, choose a model and analyze. The interface displays
-top-three scores, uncertainty, original/heatmap/overlay, static information and
-matching saved metrics. Missing, corrupt or stale evaluation shows an explicit
-unavailable status. A Colab share link is temporary and depends on the live session.
+## 🙌 Acknowledgments
 
-## Results — pending real experiments
+- **PlantVillage** dataset and its contributors.
+- **TensorFlow / Keras** for the deep learning ecosystem.
+- **Streamlit** for the web app framework.
 
-Optional background visual interpretation is available through OpenRouter.
-It runs after the CNN result, compares both architectures and appends validated
-observations without changing classifications or confidence. Setup requires
-private credentials and separately transferred instructions; neither is stored
-in Git. See [the agent setup and evaluation guide](docs/AGENT_GUIDE.md).
-Live authenticated inference and any effect on user decisions remain unverified.
+---
 
-| Architecture | PlantVillage accuracy / macro F1 | External accuracy / macro F1 | Training status |
-|---|---|---|---|
-| EfficientNetB0 | Pending real evaluation | Not evaluated | No disease training performed |
-| MobileNetV3Large | Pending real evaluation | Not evaluated | No disease training performed |
+<div align="center">
 
-CPU software checks and ImageNet-backbone checks are not disease-classification
-experiments. Do not insert numerical performance or screenshots until collected
-from the actual dataset workflow.
+### 🌿 Helping make plant-health screening more accessible
 
-## Future scope and references
+**[🚀 Launch AgriVision-AI](https://agrivisionaa.streamlit.app/)** · **[⬆ Back to top](#-agrivision-ai)**
 
-Future experiments can execute the implemented compatible-class PlantDoc workflow,
-add calibration, multiple seeds and more diverse independently collected field imagery.
-Primary papers, framework documentation and disease references are listed in
-[REFERENCES.md](docs/REFERENCES.md); each verified disease record also links to
-its source directly.
+<sub>Built for educational and research demonstration purposes.</sub>
 
-See [methodology](docs/METHODOLOGY.md), [viva](docs/VIVA.md),
-[report/presentation outline](docs/REPORT_AND_PRESENTATION.md), and
-[references](docs/REFERENCES.md).
+</div>
