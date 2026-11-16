@@ -1,8 +1,6 @@
-<div align="center">
-
-<img src="assets/banner.png" alt="AgriVision-AI — AI-powered plant leaf disease detection" width="100%" />
-
-<br />
+<p align="center">
+  <img src="./banner.png" alt="AgriVision-AI Banner" width="100%">
+</p>
 
 # 🌿 AgriVision-AI
 ### AI-Powered Plant Leaf Disease Detection & Intelligent Crop Health Assistance
